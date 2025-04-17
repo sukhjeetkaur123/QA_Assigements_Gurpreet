@@ -2,7 +2,9 @@ package com.POM.pages;
 
 import com.testBase.TestBase;
 import org.apache.http.impl.conn.tsccm.WaitingThread;
+import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
@@ -14,12 +16,87 @@ import org.openqa.selenium.support.ui.Wait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
+import javax.lang.model.element.Element;
+import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
 public class HomePage extends TestBase {
-    @FindBy(xpath = "//label[contains(text(),'Community')]")
-    WebElement community_checkBox;
+
+    JavascriptExecutor js = (JavascriptExecutor) driver;
+    static String value =prop.getProperty("device");
+    @FindBy(xpath = "//*[@class='nav-search-field ']//input")
+    WebElement searchBar;
+
+    @FindBy(xpath = "//*[@id='nav-search-submit-text']//input[@type='submit']")
+    WebElement submitButton;
+
+
+    @FindBy(xpath = "//span[contains(text(),'Results')]")
+    WebElement labelValue;
+
+
+   @FindBy(xpath = "//span[contains(text(),'Results')]")
+   WebElement dismissAlert;
+
+    @FindBy(xpath = "(//div[@class='sg-col-inner']//div[contains(@class,'a-section')]//span)[2]")
+    WebElement labelOfSearchString;
+
+
+   @FindBy(xpath = "//span[contains(@class,'button-dismiss')]//span[@class='a-button-text']")
+   WebElement dismissAlertBtn;
+
+    @FindBy(xpath = "//h2[@class='a-size-mini a-spacing-none a-color-base s-line-clamp-2']//a//span")
+    WebElement descriptions;
+
+
+
+
+/////////////////static generic methods/////////////////
+
+
+
+    static void CheckAttibute(WebElement ele ,String data){
+
+        String attribute = ele.getAttribute("type");
+        Assert.assertEquals(attribute,data);
+    }
+
+    static void sendkeysIntoSearchBAr(WebElement ele){
+
+      ele.sendKeys(value);
+    }
+
+    static void clickButton(WebElement ele){
+        ele.click();
+    }
+
+    static boolean statusOfsearchedVAlue(WebElement ele,String expectedValue){
+        String value = ele.getText();
+        boolean status = value.equals(expectedValue);
+        return  status;
+
+    }
+    static void waitForDissmissAlert(){
+        // Wait for the alert to be present
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        wait.until(ExpectedConditions.alertIsPresent());
+
+        // Switch to the alert and dismiss it
+        Alert alert = driver.switchTo().alert();
+        alert.dismiss();
+
+    }
+
+
+
+
+
+
+
+
+    ///////////////////////////////////////////////////////////test cases///////////////////////////
 
     public HomePage() {
         PageFactory.initElements(driver,this);
@@ -30,93 +107,63 @@ public class HomePage extends TestBase {
     }
 
 //    BEfore click checkbox to verify is it unchecked
-    public void verifyBoxUnChecked(){
-        String value = driver.findElement(By.xpath("//input[@id='su__facet-1-Community']")).getAttribute("class");
-       Assert.assertEquals(value,"su__toggle-input su__cursor su__mr-2 ");
+    public void verifySearchBarShouldBeAvailable(){
+
+        CheckAttibute(searchBar,"text");
     }
 
-    public void selctRandomFilterAndSelectRandomOptionandAndCheckedUnderThat() throws InterruptedException {
-        int options = driver.findElements(By.xpath("((//div[@class='su__w-100 su__bg-white'])[2]//input[@type='checkbox'])")).size();
-        Random random = new Random();
-//        int index = random.nextInt(options+1);
-        int min = 1;
-        int max = 2;
-        int value = (int) (Math.random() * (max-min+1)+min);
-        String str = "((//div[@class='su__w-100 su__bg-white'])[2]//input[@type='checkbox'])[" +value+ "]";
-        WebElement ele = driver.findElement(By.xpath(str));
-        System.out.println("the elemet is"+str);
-        Actions action = new Actions(driver);
-        action.moveToElement(ele).click().perform();
-
-        if(value==1){
-            verifyBoxIsCheckedDocumentation();
-          selectRandomOptionFromDocumentChechBox();
-        }
-        else if(value==2){
-            verfiyBoxIsChecked();
-            selectRandomOptionFromCommunityChechBox();
-        }
-    }
-
-    public void verfiyBoxIsChecked() throws InterruptedException {
+    public void addKeywordForSearchAndclickButton() throws InterruptedException {
+    sendkeysIntoSearchBAr(searchBar);
+        clickButton(submitButton);
         Thread.sleep(3000);
-        String value = driver.findElement(By.xpath("//input[@id='su__facet-1-Community']")).getAttribute("class");
-        Assert.assertEquals(value, "su__toggle-input su__cursor su__mr-2 su__filter-checked");
-    }
-
-    public void verifyBoxIsCheckedDocumentation() throws InterruptedException {
-        Thread.sleep(3000);
-        String value = driver.findElement(By.xpath("//input[@id='su__facet-1-Documentation']")).getAttribute("class");
-        Assert.assertEquals(value, "su__toggle-input su__cursor su__mr-2 su__filter-checked");
+        statusOfsearchedVAlue(labelValue,"Result");
 
     }
 
-    public void selectRandomOptionFromDocumentChechBox(){
-        int options = driver.findElements(By.xpath("(//div[@class='su__filter-content-row su__position-relative su__pb-1 su__px-3 su__bg-gray-hover su__py-1 topic '])")).size();
+    public void chechRelevantProduct(){
+        String actualValue = labelOfSearchString.getText();
+        if(actualValue.equalsIgnoreCase(value) && descriptions.getText().contains(value)){
+            System.out.println("result of relevant product");
+        }
+
+    }
+
+    public void clickOnProduct(){
+        List<WebElement> links = driver.findElements(By.xpath("//h2[@class='a-size-mini a-spacing-none a-color-base s-line-clamp-2']//a"));
+
+        // Random object to generate random numbers
         Random random = new Random();
-        int min = 0;
-        int max = 8;
-        int value = (int) (Math.random() * (max-min+1)+min);
-        String str = "((//div[@class='su__w-100 su__bg-white'])[4]//input[@type='checkbox'])[" +value+ "]";
-        WebElement ele = driver.findElement(By.xpath(str));
-        String actual = ele.getText();
-        System.out.println("the actual data :"+actual);
-        Actions action = new Actions(driver);
-        action.moveToElement(ele).click().perform();
 
-        List<WebElement> list = driver.findElements(By.xpath("((//div[@class='su__w-100 su__bg-white'])[4]//input[@type='checkbox'])"));
-        for(WebElement expect:list) {
-            String expected = expect.getText();
-            System.out.println("the expected data" + expected);
-            if (expected.contains(actual)) {
-                System.out.println("the data is presnt in list");
-            } else {
-                System.out.println("the data in the list is not avaaiable");
-            }
+        // Define the number of random clicks you want to perform
+        int numberOfClicks = 5;
+
+        // Perform random clicks
+        for (int i = 0; i < numberOfClicks; i++) {
+            // Select a random link from the list
+            WebElement randomLink = links.get(random.nextInt(links.size()));
+
+            // Click the random link
+            randomLink.click();
+    }
+    }
+
+    public void verifyLinkOpenAnotherTab(){
+        List<String> tabs = new ArrayList<>(driver.getWindowHandles());
+
+        // Switch to the new tab (the last one in the list)
+        driver.switchTo().window(tabs.get(tabs.size() - 1));
+
+        // Validate the content of the new tab
+        // Here we are checking if the new tab contains a specific element or text
+        boolean isContentValid = driver.findElement(By.tagName("body")).getText().contains("Expected Content");
+
+        // Print validation result
+        if (isContentValid) {
+            System.out.println("The link opened in a new tab and the content is valid.");
+        } else {
+            System.out.println("The link opened in a new tab but the content is not valid.");
         }
     }
 
-    public void selectRandomOptionFromCommunityChechBox(){
-        int options = driver.findElements(By.xpath("((//div[@class='su__w-100 su__bg-white'])[4]//input[@type='checkbox'])")).size();
-        Random random = new Random();
-        int index = random.nextInt(options+1);
-        String str = "((//div[@class='su__w-100 su__bg-white'])[4]//input[@type='checkbox'])[" +index+ "]";
-        WebElement ele = driver.findElement(By.xpath(str));
-        System.out.println("the elemet is"+str);
-        Actions action = new Actions(driver);
-        action.moveToElement(ele).click().perform();
-        String actual= ele.getText();
-        List<WebElement> list = driver.findElements(By.xpath("((//div[@class='su__w-100 su__bg-white'])[4]//input[@type='checkbox'])"));
-        for(WebElement expect:list){
-            String expected = expect.getText();
-            System.out.println("the expected data"+expected);
-            if(expected.contains(actual)){
-                System.out.println("the data is presnt in list");
-            }
-            else {
-                System.out.println("the data in the list is not avaaiable");
-            }
-        }
-        }
 }
 

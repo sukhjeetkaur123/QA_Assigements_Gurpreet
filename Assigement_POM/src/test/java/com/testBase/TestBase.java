@@ -10,6 +10,7 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import com.POM.PageFactory.ObjectFactory;
 
 import io.github.bonigarcia.wdm.WebDriverManager;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 public class TestBase {
 	public static Properties prop;
@@ -18,10 +19,10 @@ public class TestBase {
 	
 	public TestBase() {
 		try {
-		
-			FileInputStream fis = new FileInputStream("C:\\Users\\DELL\\OneDrive\\Desktop\\asigenments\\JavaWithSelenium\\com.POM.withpageFactory\\src\\test\\java\\com\\POM\\configation\\config.properties");
+
+			FileInputStream ip = new FileInputStream(System.getProperty("user.dir") + "//TestData//config.properties");
 			prop= new Properties();
-			prop.load(fis);
+			prop.load(ip);
 	}
 		
 		
@@ -33,11 +34,24 @@ public class TestBase {
 		obj = new ObjectFactory();
 		  WebDriverManager.chromedriver().setup();
 		  driver=new ChromeDriver();
-	   
+		ChromeOptions options = new ChromeOptions();
+		options.addArguments("enable-automation");
+		options.addArguments("--remote-allow-origins=*");
+		driver = new ChromeDriver(options);
 		  driver.manage().window().maximize();
 		  driver.manage().timeouts().implicitlyWait(Duration.ofMillis(5000));
-		  driver.get("https://docs.searchunify.com/Search.htm");
-		  
-		
+		  driver.manage().deleteAllCookies();driver.manage().window().maximize();
+		 driver.get(prop.getProperty("url"));
 	}
+
+	 public void tearDown(){
+
+		try{
+			driver.quit();
+		}catch (NullPointerException e){
+
+			System.out.println("execptions"+e);
+		}
+	 }
+
 }
